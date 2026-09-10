@@ -1,0 +1,169 @@
+{
+  "name": "Customer Support AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "02f0a346-8460-42b7-a066-517a4760f2ba",
+      "name": "When Chat Message Received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        112
+      ],
+      "webhookId": "445b7199-f0c2-4299-ad3f-7d7179c56c3d"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a customer support assistant for a SaaS company.\n\nYour job is to answer questions about customers using the \"customer_lookup\" tool.\n\nRULES:\n- Whenever a question is about a specific customer, you MUST call the \"customer_lookup\" tool with their customer_id before answering. Never invent customer data.\n- Customer IDs look like CUST001, CUST002, etc.\n- If the user does not provide a customer_id, politely ask them for it. Do not call the tool without an ID.\n- If the tool returns found:false, tell the user clearly that no customer was found with that ID and do not fabricate details.\n- If the tool returns found:true, answer the user's question using only the returned fields (name, email, plan, status, country).\n- Be concise, accurate, and professional.",
+          "maxIterations": 5
+        }
+      },
+      "id": "17e9cda4-27a8-4478-a7a5-93a42597bf7e",
+      "name": "Customer Support Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {
+          "maxOutputTokens": 512,
+          "temperature": 0
+        }
+      },
+      "id": "e0f07335-7de1-40ab-8b4b-4292e852884c",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        304
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GyUgk15GB3craAwS",
+          "name": "Google Gemini API account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "id": "ee21f992-c75d-4cb2-8886-205c46b08521",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "description": "Look up a customer record in the customer database by their customer ID. Use this whenever the user asks about a specific customer, their plan, status, email, or country. Returns found:false when the ID does not exist.",
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "cT9QkFNxVmE91tIG",
+          "cachedResultName": "Customer Lookup Tool"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_id": "={{ $fromAI('customer_id', 'The customer ID to look up, for example CUST001', 'string') }}"
+          },
+          "schema": [
+            {
+              "id": "customer_id",
+              "displayName": "customer_id",
+              "type": "string",
+              "required": true,
+              "display": true,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        }
+      },
+      "id": "cece7f87-90f6-4270-9fd6-8b497ae1d9bb",
+      "name": "customer_lookup",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        336
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Chat Message Received": {
+      "main": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "customer_lookup": {
+      "ai_tool": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "59fc585b-0455-4dd0-bc9f-cc96e2fa40ab",
+  "meta": {
+    "instanceId": "6abe9931809978352319cb21622ffdff38accce530bfc6c488633e9f18461d78"
+  },
+  "nodeGroups": [],
+  "id": "sm2n66IE6gw0nkkJ",
+  "tags": []
+}

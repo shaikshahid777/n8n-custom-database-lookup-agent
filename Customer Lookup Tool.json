@@ -1,0 +1,64 @@
+{
+  "name": "Customer Lookup Tool",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "customer_id"
+            }
+          ]
+        }
+      },
+      "id": "5a620396-2500-49b2-a0b6-e0c51d113154",
+      "name": "When Called by Agent",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Mock customer database\nconst customers = {\n  'CUST001': { customer_id: 'CUST001', name: 'Alice Johnson', email: 'alice.johnson@example.com', plan: 'Premium', status: 'active', country: 'USA' },\n  'CUST002': { customer_id: 'CUST002', name: 'Bob Smith', email: 'bob.smith@example.com', plan: 'Basic', status: 'active', country: 'UK' },\n  'CUST003': { customer_id: 'CUST003', name: 'Carla Mendes', email: 'carla.mendes@example.com', plan: 'Enterprise', status: 'suspended', country: 'Brazil' },\n  'CUST004': { customer_id: 'CUST004', name: 'Daniel Kim', email: 'daniel.kim@example.com', plan: 'Premium', status: 'active', country: 'South Korea' },\n  'CUST005': { customer_id: 'CUST005', name: 'Ewa Kowalski', email: 'ewa.kowalski@example.com', plan: 'Basic', status: 'churned', country: 'Poland' },\n};\n\nconst raw = $json.customer_id;\nconst id = (raw === undefined || raw === null ? '' : String(raw)).trim().toUpperCase();\n\nif (!id) {\n  return { found: false, error: 'missing_customer_id', message: 'No customer_id was provided.' };\n}\n\nconst record = customers[id];\nif (!record) {\n  return { found: false, error: 'not_found', message: `No customer found with ID ${id}.`, customer_id: id };\n}\n\nreturn { found: true, ...record };"
+      },
+      "id": "c5cb33b0-6d4c-41d0-8e00-e8729834963c",
+      "name": "Lookup Customer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Called by Agent": {
+      "main": [
+        [
+          {
+            "node": "Lookup Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6c9605d6-cb25-4b5a-86a9-10e7970d6572",
+  "meta": {
+    "instanceId": "6abe9931809978352319cb21622ffdff38accce530bfc6c488633e9f18461d78"
+  },
+  "nodeGroups": [],
+  "id": "cT9QkFNxVmE91tIG",
+  "tags": []
+}
